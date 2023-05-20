@@ -59,7 +59,5 @@ public class Player {
         return null;
     }
 
-    public void incrementScore() {
-        score++;
-    }
+
 }
