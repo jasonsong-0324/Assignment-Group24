@@ -1,7 +1,8 @@
 import java.util.*;
+import java.io.Serializable;
 
 
-public class Player {
+public class Player implements Serializable{
     private String name;
     private List<Card> hand;
     private List<Card> tricks;
@@ -59,5 +60,12 @@ public class Player {
         return null;
     }
 
+    public void incrementScore() {
+        tricks.add(new Card("", "")); // Add a dummy card to represent a won trick
+    }
 
+    public void setScore(int newScore) {
+        score = newScore;
+    }
+   
 }
