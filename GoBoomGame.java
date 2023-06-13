@@ -386,7 +386,7 @@ import java.io.*;
                 objectOut.writeObject(center);
                 objectOut.writeObject(trickNumber);
                 objectOut.writeInt(currentPlayerIndex); // Save currentPlayerIndex
-                //objectOut.writeObject(players.get(currentPlayerIndex).getName()); // Save currentPlayer
+                objectOut.writeObject(players.get(currentPlayerIndex).getName()); // Save currentPlayer
                 objectOut.close();
                 fileOut.close();
                 System.out.println("Game saved successfully.");
@@ -396,55 +396,40 @@ import java.io.*;
         }
 
         @SuppressWarnings("unchecked")
-        public static void loadGame(String fileName) {
-            try {
-                FileInputStream fileIn = new FileInputStream(fileName);
-                ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-        
-                Object rawPlayers = objectIn.readObject();
-                Object rawDeck = objectIn.readObject();
-                Object rawCenter = objectIn.readObject();
-                Object rawTrickNumber = objectIn.readObject(); // Read trickNumber
-                trickNumber = (int) rawTrickNumber; // Update trickNumber
+    public static void loadGame(String fileName) {
+        try {
+            FileInputStream fileIn = new FileInputStream(fileName);
+            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
 
-                int loadedCurrentPlayerIndex = objectIn.readInt(); // Read currentPlayerIndex
-                String loadedCurrentPlayerName = (String) objectIn.readObject(); // Read currentPlayerName
-                // int loadedTrickWinnerIndex = objectIn.readInt(); // Read trickWinnerIndex
-                // Card loadedFirstCard = (Card) objectIn.readObject(); // Read firstCard
-        
-                players = (List<Player>) rawPlayers;
-                deck = (List<Card>) rawDeck;
-                center = (List<Card>) rawCenter;
-        
-                objectIn.close();
-                fileIn.close();
-        
-                currentPlayerIndex = loadedCurrentPlayerIndex; // Update currentPlayerIndex
-                // trickWinnerIndex = loadedTrickWinnerIndex; // Update trickWinnerIndex
-                // firstLeadCard = loadedFirstCard; // Update firstLeadCard
-                
-                // Find the player index based on the loaded player name
-            for (int i = 0; i < players.size(); i++) {
-                if (players.get(i).getName().equals(loadedCurrentPlayerName)) {
-                    currentPlayerIndex = i;
-                    break;
-                }
-            }
-        
-                // Print the loaded player's turn
-                Player currentTurnPlayer = players.get(currentPlayerIndex);
-                System.out.println("Game loaded successfully.");
-                //System.out.println(center);
-                System.out.println("Trick #" + trickNumber);
-                System.out.println("--------------");
-                 
-                // Continue the game
-                //playTrick();
-                //trickNumber++;
-        
-            } catch (IOException | ClassNotFoundException e) {
-                System.out.println("Failed to load the game: " + e.getMessage());
-            }
+            Object rawPlayers = objectIn.readObject();
+            Object rawDeck = objectIn.readObject();
+            Object rawCenter = objectIn.readObject();
+            Object rawTrickNumber = objectIn.readObject(); // Read trickNumber
+            trickNumber = (int) rawTrickNumber; // Update trickNumber
+
+            players = (List<Player>) rawPlayers;
+            deck = (List<Card>) rawDeck;
+            center = (List<Card>) rawCenter;
+
+            objectIn.close();
+            fileIn.close();
+
+            // Print the loaded player's turn
+            System.out.println("Game loaded successfully.");
+            System.out.println(center);
+            System.out.println("Trick #" + trickNumber);
+            System.out.println("--------------");
+
+            // Find the player index based on the trick number
+            currentPlayerIndex = (currentPlayerIndex - 1) % players.size();
+
+            // Continue the game
+            // playTrick();
+            // trickNumber++;
+
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Failed to load the game: " + e.getMessage());
         }
+    }
         
     }
