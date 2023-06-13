@@ -1,5 +1,6 @@
-    import java.util.*;
-    import java.io.*;
+import java.util.*;
+
+import java.io.*;
 
     public class GoBoomGame implements Serializable{
         private static List<Player> players;
@@ -124,7 +125,7 @@
 
             firstLeadCard = deck.get(0);
             Card centerCard = new Card(firstLeadCard.getSuit(), firstLeadCard.getRank());
-            center.add(centerCard);
+            //center.add(centerCard);
             deck.remove(0);
 
             System.out.println(
@@ -248,13 +249,13 @@
         
         private static void playTrick() {
             
-            center.clear(); // Clear the center before each trick starts
+            //center.clear(); // Clear the center before each trick starts
             if (trickNumber > 1) {
                 center.clear();
             } // Clear the center before each trick starts (except Trick 1)
-            if (trickNumber == 1) {
-                center.add(firstLeadCard);
-            } // Add firstLeadCard to center only for Trick 2 onwards
+            // if (trickNumber == 1) {
+            //     center.add(firstLeadCard);
+            // } // Add firstLeadCard to center only for Trick 2 onwards
 
             // int trickWinnerIndex = currentPlayerIndex;
             // Scanner scanner = new Scanner(System.in);
@@ -446,7 +447,7 @@
         private static int trickWinnerIndex;
 
 
-        public static void saveGame(String fileName) {
+       public static void saveGame(String fileName) {
             try {
                 FileOutputStream fileOut = new FileOutputStream(fileName);
                 ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
@@ -454,6 +455,7 @@
                 objectOut.writeObject(players);
                 objectOut.writeObject(deck);
                 objectOut.writeObject(center);
+                objectOut.writeObject(trickNumber);
                 objectOut.writeInt(currentPlayerIndex); // Save currentPlayerIndex
                 objectOut.writeObject(players.get(currentPlayerIndex).getName()); // Save currentPlayer
                 objectOut.close();
@@ -473,6 +475,9 @@
                 Object rawPlayers = objectIn.readObject();
                 Object rawDeck = objectIn.readObject();
                 Object rawCenter = objectIn.readObject();
+                Object rawTrickNumber = objectIn.readObject(); // Read trickNumber
+                trickNumber = (int) rawTrickNumber; // Update trickNumber
+
                 int loadedCurrentPlayerIndex = objectIn.readInt(); // Read currentPlayerIndex
                 String loadedCurrentPlayerName = (String) objectIn.readObject(); // Read currentPlayerName
                 // int loadedTrickWinnerIndex = objectIn.readInt(); // Read trickWinnerIndex
@@ -500,8 +505,10 @@
                 // Print the loaded player's turn
                 Player currentTurnPlayer = players.get(currentPlayerIndex);
                 System.out.println("Game loaded successfully.");
-                System.out.println("Turn: " + currentTurnPlayer.getName());
-
+                System.out.println(center);
+                System.out.println("Trick #" + trickNumber);
+                System.out.println("--------------");
+                 
                 // Continue the game
                 playTrick();
         
@@ -509,6 +516,5 @@
                 System.out.println("Failed to load the game: " + e.getMessage());
             }
         }
-        
         
     }
