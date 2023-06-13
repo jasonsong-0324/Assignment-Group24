@@ -1,5 +1,6 @@
 import java.util.*;
 
+
 import java.io.*;
 
     public class GoBoomGame implements Serializable{
@@ -10,6 +11,7 @@ import java.io.*;
         private static int trickNumber;
         private static boolean isFirstTrickWon;
         private static Map<String, Integer> scores = new HashMap<>();
+        private static Card firstLeadCard;
 
         public static void main(String[] args) {
             GoBoomGame game = new GoBoomGame();
@@ -23,17 +25,17 @@ import java.io.*;
 
             while (!input.equals("x")) {
                 if (input.equals("s")) {
-                    game.startNewGame();
+                    GoBoomGame.startNewGame();
                 }else if (input.equals("load")) {
                     System.out.print("Enter the file name to load the game: ");
                     fileName = scanner.nextLine();
-                    game.loadGame(fileName);
+                    GoBoomGame.loadGame(fileName);
                 } else if (input.equals("save")) {
                     System.out.print("Enter the file name to save the game: ");
                     fileName = scanner.nextLine();
-                    game.saveGame(fileName);
+                    GoBoomGame.saveGame(fileName);
                 } else if (input.equals("reset")){
-                    game.resetgame();
+                    GoBoomGame.resetgame();
                 }else if (input.equals("quit")) {
                     System.out.println("Are you sure you want to quit? (y/n)");
                     String quitConfirmation = scanner.nextLine();
@@ -124,12 +126,11 @@ import java.io.*;
             currentPlayerIndex = determineFirstPlayer();
 
             firstLeadCard = deck.get(0);
-            Card centerCard = new Card(firstLeadCard.getSuit(), firstLeadCard.getRank());
-            //center.add(centerCard);
+            // Card centerCard = new Card(firstLeadCard.getSuit(), firstLeadCard.getRank());
+            center.add(firstLeadCard);
             deck.remove(0);
 
-            System.out.println(
-                    "At the beginning of the game, the first lead card " + firstLeadCard + " is placed at the center.");
+            System.out.println("At the beginning of the game, the first lead card " + firstLeadCard + " is placed at the center.");
             System.out.println("Player" + (currentPlayerIndex + 1) + " is the first player because of " + firstLeadCard);
             System.out.println("c=club");
             System.out.println("d=diamond");
@@ -141,23 +142,6 @@ import java.io.*;
             System.out.println("User can press 'reset' to reset game");
             System.out.println();
         }
-
-        private static Card firstLeadCard;
-
-        // private static List<Card> createDeck() {
-        //     List<Card> deck = new ArrayList<>();
-
-        //     String[] suits = { "c", "d", "h", "s" };
-        //     String[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-
-        //     for (String suit : suits) {
-        //         for (String rank : ranks) {
-        //             deck.add(new Card(suit, rank));
-        //         }
-        //     }
-
-        //     return deck;
-        // }
 
         private List<Card> createDeck() {
             List<Card> deck = new ArrayList<>();
@@ -180,7 +164,7 @@ import java.io.*;
 
         private static int determineFirstPlayer() {
             Card firstLeadCard = deck.iterator().next();
-            center.add(firstLeadCard);
+            // center.add(firstLeadCard);
             // deck.remove(firstLeadCard);
         
             String rank = firstLeadCard.getRank();
@@ -202,6 +186,7 @@ import java.io.*;
         
             return -1;
         }
+
         private static void dealCards() {
             for (int i = 0; i < 7; i++) {
                 for (Player player : players) {
@@ -211,54 +196,11 @@ import java.io.*;
                 }
             }
         }
-        // private static void dealCards() {
-        //     List<Card> deckList = new GoBoomGame().createDeck();
-        //     Set<Card> deckSet = new HashSet<>(deckList);
-        
-        //     // Remove the center card from the deck
-        //     Card centerCard = deckSet.iterator().next();
-        //     deckSet.remove(centerCard);
-        //     deckList.remove(centerCard);
-        
-        //     for (Player player : players) {
-        //         for (int i = 0; i < 7; i++) {
-        //             Card card = deckSet.iterator().next();
-        //             player.addCardToHand(card);
-        //             deckSet.remove(card);
-        //             deckList.remove(card);
-        //         }
-        //     }
-        
-        //     // Update the center list
-        //     center.clear();
-        //     center.add(centerCard);
-        
-        //     // Remove the center card from players' hands
-        //     for (Player player : players) {
-        //         player.removeCardFromHand(centerCard);
-        //     }
-        
-        //     // Remove the center card from the deck list
-        //     deckList.remove(centerCard);
-        
-        //     // Update the deck reference if required
-        //     deck = new ArrayList<>(deckList);
-        // }
-        
-
-        
+         
         private static void playTrick() {
-            
-            //center.clear(); // Clear the center before each trick starts
-            if (trickNumber > 1) {
+            if (trickNumber > 1 && !center.isEmpty()) {
                 center.clear();
-            } // Clear the center before each trick starts (except Trick 1)
-            // if (trickNumber == 1) {
-            //     center.add(firstLeadCard);
-            // } // Add firstLeadCard to center only for Trick 2 onwards
-
-            // int trickWinnerIndex = currentPlayerIndex;
-            // Scanner scanner = new Scanner(System.in);
+            } 
 
             Scanner scanner = new Scanner(System.in);
             int trickWinnerIndex = currentPlayerIndex;
@@ -266,7 +208,7 @@ import java.io.*;
             Card highestCard = null;
 
             for (int i = 0; i < players.size(); i++) {
-                Player currentPlayer = players.get(currentPlayerIndex);
+            Player currentPlayer = players.get(currentPlayerIndex);
             System.out.println("Turn: " + currentPlayer.getName());
 
             for (Player player : players) {
@@ -362,9 +304,7 @@ import java.io.*;
                             trickWinnerIndex = currentPlayerIndex;
                         }
                     }
-                    
                 }
-        
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             }
         
@@ -372,22 +312,12 @@ import java.io.*;
             System.out.println("Trick winner: " + currentTrickWinner.getName());
             currentTrickWinner.incrementScore();
         
-            
             currentPlayerIndex = trickWinnerIndex;
             if (trickNumber == 1 && trickWinnerIndex == 0) {
                 isFirstTrickWon = true; // Set isFirstTrickWon to true if the first trick is won by Player1
             }
         }
         
-
-        // private static String getScores() {
-        //     StringBuilder scoreBuilder = new StringBuilder();
-        //     for (Player player : players) {
-        //         int score = player.getTricks().size();
-        //         scoreBuilder.append(player.getName()).append(" = ").append(score).append(" | ");
-        //     }
-        //     return scoreBuilder.toString();
-        // }
         private static Map<String, Integer> getScores() {
             Map<String, Integer> scores = new HashMap<>();
             for (Player player : players) {
@@ -422,7 +352,6 @@ import java.io.*;
             return Integer.compare(index1, index2);
         }
 
-
         private static boolean isGameOver() {
             for (Player player : players) {
                 if (player.getHand().isEmpty()) {
@@ -444,7 +373,7 @@ import java.io.*;
                 System.out.println(player.getName() + ": " + score + " tricks");
             }
         }
-        private static int trickWinnerIndex;
+        // private static int trickWinnerIndex;
 
 
        public static void saveGame(String fileName) {
@@ -457,7 +386,7 @@ import java.io.*;
                 objectOut.writeObject(center);
                 objectOut.writeObject(trickNumber);
                 objectOut.writeInt(currentPlayerIndex); // Save currentPlayerIndex
-                objectOut.writeObject(players.get(currentPlayerIndex).getName()); // Save currentPlayer
+                //objectOut.writeObject(players.get(currentPlayerIndex).getName()); // Save currentPlayer
                 objectOut.close();
                 fileOut.close();
                 System.out.println("Game saved successfully.");
@@ -505,12 +434,13 @@ import java.io.*;
                 // Print the loaded player's turn
                 Player currentTurnPlayer = players.get(currentPlayerIndex);
                 System.out.println("Game loaded successfully.");
-                System.out.println(center);
+                //System.out.println(center);
                 System.out.println("Trick #" + trickNumber);
                 System.out.println("--------------");
                  
                 // Continue the game
-                playTrick();
+                //playTrick();
+                //trickNumber++;
         
             } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Failed to load the game: " + e.getMessage());
