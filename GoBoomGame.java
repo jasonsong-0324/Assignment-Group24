@@ -38,15 +38,15 @@ public class GoBoomGame implements Serializable {
             } else if (input.equals("quit")) {
                 System.out.println("Are you sure you want to quit? (y/n)");
                 String quitConfirmation = scanner.nextLine();
-                if (quitConfirmation.equalsIgnoreCase("y")) {
+                if (quitConfirmation.equals("y")) {
                     break; // exit the game loop
-                } else if(quitConfirmation.equalsIgnoreCase("n")) {
+                } else if (quitConfirmation.equals("n")) {
                     System.out.println("Continuing the game...");
                 }
             }
             System.out.println("Enter 's' to start a new game or 'x' to exit.");
             input = scanner.nextLine();
-        } 
+        }
 
         System.out.println("Thanks for playing Go Boom Game!");
 
@@ -114,7 +114,6 @@ public class GoBoomGame implements Serializable {
         shuffleDeck(deck);
 
         center = new ArrayList<>();
-        // center.add(firstLeadCard);
 
         currentPlayerIndex = determineFirstPlayer();
 
@@ -125,7 +124,8 @@ public class GoBoomGame implements Serializable {
 
         System.out.println(
                 "At the beginning of the game, the first lead card " + firstLeadCard + " is placed at the center.");
-        System.out.println("Player" + (currentPlayerIndex + 1) + " is the first player because of first lead card " + firstLeadCard + ".");
+        System.out.println("Player" + (currentPlayerIndex + 1) + " is the first player because of first lead card "
+                + firstLeadCard + ".");
         System.out.println();
         System.out.println("Card suits: Club, Diamond, Heart, Spade ");
         System.out.println("c=club");
@@ -232,13 +232,21 @@ public class GoBoomGame implements Serializable {
                     if (drawnCard != null) {
                         currentPlayer.addCardToHand(drawnCard);
                         System.out.println("Player" + (currentPlayerIndex + 1) + " draws " + drawnCard + ".");
-                        
-                        if(drawnCard.getSuit() == firstLeadCard.getSuit() || drawnCard.getSuit() == firstLeadCard.getRank()){
+
+                        if (trickNumber == 1 && (drawnCard.getSuit() == firstLeadCard.getSuit()
+                                || drawnCard.getRank() == firstLeadCard.getRank())) {
                             System.out.println("You have drawn a playable card.");
+                        } else if (trickNumber > 1 && firstCard != null && (drawnCard.getSuit() == firstCard.getSuit()
+                                || drawnCard.getRank() == firstCard.getRank())) {
+                            System.out.println("You have drawn a playable card.");
+                        } else if (trickNumber > 1 && firstCard == null) {
+                            System.out.println("Please play a card first before drawing.");
                         }
+
                     } else {
                         System.out.println("No cards left in the deck.");
-                        System.out.println("Player" + (currentPlayerIndex + 1) + " turn has end.Proceed to next player.");
+                        System.out
+                                .println("Player" + (currentPlayerIndex + 1) + " turn has end.Proceed to next player.");
                         System.out.println();
                         break;
                     }
@@ -263,8 +271,8 @@ public class GoBoomGame implements Serializable {
                     System.out.println("Are you sure you want to quit? (y/n)");
                     String quitConfirmation = scanner.nextLine();
                     if (quitConfirmation.equalsIgnoreCase("y")) {
-                        break; // exit the game loop
-                    } else if(quitConfirmation.equalsIgnoreCase("n")) {
+                        System.exit(0); // exit the game loop
+                    } else if (quitConfirmation.equalsIgnoreCase("n")) {
                         System.out.println("Continuing the game...");
                     }
                 } else {
@@ -324,15 +332,17 @@ public class GoBoomGame implements Serializable {
         }
 
         trickNumber++;
-        
+
     }
 
     private static Map<String, Integer> getScores() {
-        Map<String, Integer> scores = new HashMap<>();
+        Map<String, Integer> scores = new LinkedHashMap<>(); // Use LinkedHashMap for maintaining order
+
         for (Player player : players) {
             int score = player.getTricks().size();
             scores.put(player.getName(), score);
         }
+
         return scores;
     }
 
@@ -370,19 +380,32 @@ public class GoBoomGame implements Serializable {
         return false;
     }
 
+    // private static void displayScores() {
+    // System.out.println("Game Over!");
+    // System.out.println("Final Scores:");
+
+    // for (Player player : players) {
+    // int score = player.getTricks().size();
+    // if (isFirstTrickWon && player == players.get(0)) {
+    // score++; // Increase the score of the first trick winner if isFirstTrickWon
+    // is true
+    // }
+    // System.out.println(player.getName() + ": " + score + " tricks");
+    // }
+    // }
+
     private static void displayScores() {
         System.out.println("Game Over!");
         System.out.println("Final Scores:");
 
+        Map<String, Integer> scores = getScores(); // Get the scores using the getScores() method
+
+        // Iterate over the scores in a specific order
         for (Player player : players) {
-            int score = player.getTricks().size();
-            if (isFirstTrickWon && player == players.get(0)) {
-                score++; // Increase the score of the first trick winner if isFirstTrickWon is true
-            }
+            int score = scores.get(player.getName());
             System.out.println(player.getName() + ": " + score + " tricks");
         }
     }
-    
 
     public static void saveGame(String fileName) {
         try {
@@ -430,8 +453,6 @@ public class GoBoomGame implements Serializable {
 
             // Find the player index
             currentPlayerIndex = (currentPlayerIndex - 1) % players.size();
-
-            
 
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Failed to load the game: " + e.getMessage());
