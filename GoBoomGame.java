@@ -39,7 +39,7 @@ public class GoBoomGame implements Serializable {
                 System.out.println("Are you sure you want to quit? (y/n)");
                 String quitConfirmation = scanner.nextLine();
                 if (quitConfirmation.equals("y")) {
-                    break; // exit the game loop
+                    System.exit(0); // exit the game loop
                 } else if (quitConfirmation.equals("n")) {
                     System.out.println("Continuing the game...");
                 }
@@ -55,7 +55,7 @@ public class GoBoomGame implements Serializable {
 
     private static void startNewGame() {
         initializeGame();
-        dealCards();
+        // dealCards();
         trickNumber = 1;
 
         isFirstTrickWon = false;
@@ -112,6 +112,7 @@ public class GoBoomGame implements Serializable {
         GoBoomGame game = new GoBoomGame();
         deck = game.createDeck();
         shuffleDeck(deck);
+        dealCards();
 
         center = new ArrayList<>();
 
@@ -204,6 +205,7 @@ public class GoBoomGame implements Serializable {
         int trickWinnerIndex = currentPlayerIndex;
         Card firstCard = null;
         Card highestCard = null;
+        String input = "";
 
         for (int i = 0; i < players.size(); i++) {
             Player currentPlayer = players.get(currentPlayerIndex);
@@ -222,9 +224,9 @@ public class GoBoomGame implements Serializable {
             Card playedCard = null;
             boolean hasValidCard = false;
 
-            while (!hasValidCard) {
+            while (!hasValidCard && !input.equalsIgnoreCase("quit")) {
                 System.out.print(">");
-                String input = scanner.nextLine();
+                input = scanner.nextLine();
 
                 if (input.equalsIgnoreCase("d")) {
                     Card drawnCard = currentPlayer.drawCardFromDeck(deck);
@@ -233,7 +235,7 @@ public class GoBoomGame implements Serializable {
                         currentPlayer.addCardToHand(drawnCard);
                         System.out.println("Player" + (currentPlayerIndex + 1) + " draws " + drawnCard + ".");
 
-                        if (trickNumber == 1 && (drawnCard.getSuit() == firstLeadCard.getSuit()
+                        if (firstLeadCard != null && trickNumber == 1 && (drawnCard.getSuit() == firstLeadCard.getSuit()
                                 || drawnCard.getRank() == firstLeadCard.getRank())) {
                             System.out.println("You have drawn a playable card.");
                         } else if (trickNumber > 1 && firstCard != null && (drawnCard.getSuit() == firstCard.getSuit()
@@ -261,6 +263,7 @@ public class GoBoomGame implements Serializable {
                     System.out.print("Enter the file name to load the game: ");
                     String fileName = scanner.nextLine();
                     loadGame(fileName);
+                    setCurrentPlayerIndex(currentPlayerIndex);
                     // currentPlayerIndex = loadCurrentPlayerIndex(fileName); // Update
                     // currentPlayerIndex
 
@@ -312,7 +315,8 @@ public class GoBoomGame implements Serializable {
                 firstCard = playedCard; // Assign the first card played in the trick
                 highestCard = playedCard; // Assign the highest card as the first card
             } else {
-                if (playedCard != null && playedCard.getSuit().equals(firstCard.getSuit())) {
+                if (playedCard != null && firstCard != null && highestCard != null
+                        && playedCard.getSuit().equals(firstCard.getSuit())) {
                     if (compareRanks(playedCard.getRank(), highestCard.getRank()) > 0) {
                         highestCard = playedCard;
                         trickWinnerIndex = currentPlayerIndex;
@@ -332,7 +336,9 @@ public class GoBoomGame implements Serializable {
         }
 
         trickNumber++;
+    }
 
+    private static void setCurrentPlayerIndex(int currentPlayerIndex2) {
     }
 
     private static Map<String, Integer> getScores() {
@@ -407,6 +413,58 @@ public class GoBoomGame implements Serializable {
         }
     }
 
+    // public static void saveGame(String fileName) {
+    // try {
+    // FileOutputStream fileOut = new FileOutputStream(fileName);
+    // ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+
+    // objectOut.writeObject(players);
+    // objectOut.writeObject(deck);
+    // objectOut.writeObject(center);
+    // objectOut.writeInt(currentPlayerIndex) ;
+    // objectOut.writeInt(trickNumber);
+    // objectOut.writeBoolean(isFirstTrickWon);
+    // objectOut.writeObject(scores);
+    // objectOut.writeObject(firstLeadCard);
+
+    // objectOut.close();
+    // fileOut.close();
+    // System.out.println("Game saved successfully.");
+
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
+    // }
+
+    // @SuppressWarnings("unchecked")
+    // public static void loadGame(String fileName) {
+    // try {
+    // FileInputStream fileIn = new FileInputStream(fileName);
+    // ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+    // players = (List<Player>) objectIn.readObject();
+    // deck = (List<Card>) objectIn.readObject();
+    // center = (List<Card>) objectIn.readObject();
+    // currentPlayerIndex = objectIn.readInt();
+    // trickNumber = objectIn.readInt();
+    // isFirstTrickWon = objectIn.readBoolean();
+    // scores = (Map<String, Integer>) objectIn.readObject();
+    // firstLeadCard = (Card) objectIn.readObject();
+    // objectIn.close();
+    // fileIn.close();
+
+    // // Print the loaded player's turn
+    // System.out.println("Game loaded successfully.");
+    // System.out.println(center);
+    // System.out.println("Trick #" + trickNumber);
+    // System.out.println("--------------");
+
+    // // Find the player index
+    // currentPlayerIndex = (currentPlayerIndex - 1) % players.size();
+
+    // } catch (IOException | ClassNotFoundException e) {
+    // System.out.println("Failed to load the game: " + e.getMessage());
+    // }
+    // }
     public static void saveGame(String fileName) {
         try {
             FileOutputStream fileOut = new FileOutputStream(fileName);
@@ -416,8 +474,10 @@ public class GoBoomGame implements Serializable {
             objectOut.writeObject(deck);
             objectOut.writeObject(center);
             objectOut.writeObject(trickNumber);
-            objectOut.writeInt(currentPlayerIndex); // Save currentPlayerIndex
-            objectOut.writeObject(players.get(currentPlayerIndex).getName()); // Save currentPlayer
+            objectOut.writeInt(currentPlayerIndex);
+            objectOut.writeBoolean(isFirstTrickWon); // Save isFirstTrickWon
+            objectOut.writeObject(scores); // Save scores
+
             objectOut.close();
             fileOut.close();
             System.out.println("Game saved successfully.");
@@ -432,28 +492,48 @@ public class GoBoomGame implements Serializable {
             FileInputStream fileIn = new FileInputStream(fileName);
             ObjectInputStream objectIn = new ObjectInputStream(fileIn);
 
-            Object rawPlayers = objectIn.readObject();
-            Object rawDeck = objectIn.readObject();
-            Object rawCenter = objectIn.readObject();
-            Object rawTrickNumber = objectIn.readObject(); // Read trickNumber
-            trickNumber = (int) rawTrickNumber; // Update trickNumber
-
-            players = (List<Player>) rawPlayers;
-            deck = (List<Card>) rawDeck;
-            center = (List<Card>) rawCenter;
+            List<Player> loadedPlayers = (List<Player>) objectIn.readObject();
+            List<Card> loadedDeck = (List<Card>) objectIn.readObject();
+            List<Card> loadedCenter = (List<Card>) objectIn.readObject();
+            int loadedTrickNumber = (int) objectIn.readObject();
+            int loadedCurrentPlayerIndex = objectIn.readInt();
+            isFirstTrickWon = objectIn.readBoolean(); // Assign the loaded value to isFirstTrickWon
+            scores = (Map<String, Integer>) objectIn.readObject(); // Assign the loaded value to scores
 
             objectIn.close();
             fileIn.close();
 
+            // Update the game state with the loaded data
+            players = loadedPlayers;
+            deck = loadedDeck;
+            center = loadedCenter;
+            trickNumber = loadedTrickNumber;
+            currentPlayerIndex = loadedCurrentPlayerIndex;
+
+            // Call the resumeGame method to continue the game from the loaded state
+            // resumeGame(fileName);
+
             // Print the loaded player's turn
             System.out.println("Game loaded successfully.");
             System.out.println(center);
+            // Continue the game from the loaded state
+
+            // Main game loop
+            isFirstTrickWon = false;
+            while (!isGameOver()) {
             System.out.println("Trick #" + trickNumber);
             System.out.println("--------------");
 
-            // Find the player index
-            currentPlayerIndex = (currentPlayerIndex - 1) % players.size();
+            playTrick();
 
+            System.out.println();
+            if (isGameOver()) {
+                break; // Exit the loop if the game is over
+            }
+        }
+
+        displayScores();
+            
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Failed to load the game: " + e.getMessage());
         }
